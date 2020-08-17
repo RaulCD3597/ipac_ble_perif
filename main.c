@@ -342,8 +342,6 @@ static void sleep_mode_enter(void)
  */
 static void on_adv_evt(ble_adv_evt_t ble_adv_evt)
 {
-    uint32_t err_code;
-
     switch (ble_adv_evt)
     {
         case BLE_ADV_EVT_FAST:
@@ -614,8 +612,8 @@ static void advertising_init(void)
 static void buttons_leds_init()
 {
     // Inicializo los leds
-    size_t led = 17;
-    for (led; led < 21; led++)
+    size_t led;
+    for (led = 17; led < 21; led++)
     {
         nrf_gpio_cfg_output(led);
         nrf_gpio_pin_set(led);

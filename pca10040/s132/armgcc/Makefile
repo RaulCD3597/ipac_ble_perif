@@ -1,11 +1,11 @@
-PROJECT_NAME     := ble_app_uart_pca10040_s132
-TARGETS          := nrf52832_xxaa
+PROJECT_NAME     := ipac_ble_perif
+TARGETS          := ipac_ble_perif
 OUTPUT_DIRECTORY := _build
 
 SDK_ROOT := ../../../../../..
 PROJ_DIR := ../../..
 
-$(OUTPUT_DIRECTORY)/nrf52832_xxaa.out: \
+$(OUTPUT_DIRECTORY)/ipac_ble_perif.out: \
   LINKER_SCRIPT  := ble_app_uart_gcc_nrf52.ld
 
 # Source files common to all targets
@@ -277,12 +277,12 @@ LIB_FILES += -lc -lnosys -lm
 .PHONY: default help
 
 # Default target - first one defined
-default: nrf52832_xxaa
+default: ipac_ble_perif
 
 # Print all targets that can be built
 help:
 	@echo following targets are available:
-	@echo		nrf52832_xxaa
+	@echo		ipac_ble_perif
 	@echo		flash_softdevice
 	@echo		sdk_config - starting external tool for editing sdk_config.h
 	@echo		flash      - flashing binary
@@ -298,8 +298,8 @@ $(foreach target, $(TARGETS), $(call define_target, $(target)))
 
 # Flash the program
 flash: default
-	@echo Flashing: $(OUTPUT_DIRECTORY)/nrf52832_xxaa.hex
-	nrfjprog -f nrf52 --program $(OUTPUT_DIRECTORY)/nrf52832_xxaa.hex --sectorerase
+	@echo Flashing: $(OUTPUT_DIRECTORY)/ipac_ble_perif.hex
+	nrfjprog -f nrf52 --program $(OUTPUT_DIRECTORY)/ipac_ble_perif.hex --sectorerase
 	nrfjprog -f nrf52 --reset
 
 # Flash softdevice
