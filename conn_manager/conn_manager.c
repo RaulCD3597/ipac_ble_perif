@@ -7,7 +7,6 @@
 // ipac headers
 #include "conn_manager.h"
 #include "hardware.h"
-#include "soft_util.h"
 
 // Nordic common library
 #include "nordic_common.h"
@@ -111,6 +110,14 @@ NRF_BLE_QWR_DEF(m_qwr);
  */
 BLE_ADVERTISING_DEF(m_advertising);
 /**
+ * BLE NUS service instance.
+ */
+BLE_NUS_DEF(m_nus, NRF_SDH_BLE_TOTAL_LINK_COUNT);
+/**
+ * Handle of the current connection.
+ */
+static uint16_t   m_conn_handle          = BLE_CONN_HANDLE_INVALID;
+/**
  * Maximum length of data (in bytes) that can be transmitted to the peer by
  * the Nordic UART service module.
  */
@@ -163,6 +170,22 @@ void conn_advertising_start(void)
     APP_ERROR_CHECK(err_code);
 }
 
+/**
+ * @brief fuction for get the nus instace
+ */
+ble_nus_t * conn_get_nus(void)
+{
+    return ((ble_nus_t *)&m_nus);
+}
+
+/**
+ * @brief fuction for get the connection handle
+ */
+uint16_t * conn_get_conn_handle(void)
+{
+    return ((uint16_t *)&m_conn_handle);
+}
+
 /* -----------------  local functions -----------------*/
 
 /**
@@ -205,8 +228,8 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
     {
         case BLE_GAP_EVT_CONNECTED:
             nrf_gpio_pin_clear(CONNECTED_LED);
-            *(soft_get_conn_handle()) = p_ble_evt->evt.gap_evt.conn_handle;
-            err_code = nrf_ble_qwr_conn_handle_assign(&m_qwr, *(soft_get_conn_handle()));
+            m_conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
+            err_code = nrf_ble_qwr_conn_handle_assign(&m_qwr, m_conn_handle);
             APP_ERROR_CHECK(err_code);
             err_code = app_button_enable();
             APP_ERROR_CHECK(err_code);
@@ -215,7 +238,7 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
         case BLE_GAP_EVT_DISCONNECTED:
             nrf_gpio_pin_set(CONNECTED_LED);
             // LED indication will be changed when advertising starts.
-            *(soft_get_conn_handle()) = BLE_CONN_HANDLE_INVALID;
+            m_conn_handle = BLE_CONN_HANDLE_INVALID;
             err_code = app_button_disable();
             APP_ERROR_CHECK(err_code);
             break;
@@ -233,13 +256,13 @@ static void ble_evt_handler(ble_evt_t const * p_ble_evt, void * p_context)
 
         case BLE_GAP_EVT_SEC_PARAMS_REQUEST:
             // Pairing not supported
-            err_code = sd_ble_gap_sec_params_reply(*(soft_get_conn_handle()), BLE_GAP_SEC_STATUS_PAIRING_NOT_SUPP, NULL, NULL);
+            err_code = sd_ble_gap_sec_params_reply(m_conn_handle, BLE_GAP_SEC_STATUS_PAIRING_NOT_SUPP, NULL, NULL);
             APP_ERROR_CHECK(err_code);
             break;
 
         case BLE_GATTS_EVT_SYS_ATTR_MISSING:
             // No system attributes have been stored.
-            err_code = sd_ble_gatts_sys_attr_set(*(soft_get_conn_handle()), NULL, 0, 0);
+            err_code = sd_ble_gatts_sys_attr_set(m_conn_handle, NULL, 0, 0);
             APP_ERROR_CHECK(err_code);
             break;
 
@@ -312,7 +335,7 @@ static void gatt_init(void)
  */
 static void gatt_evt_handler(nrf_ble_gatt_t * p_gatt, nrf_ble_gatt_evt_t const * p_evt)
 {
-    if ((*(soft_get_conn_handle()) == p_evt->conn_handle) && (p_evt->evt_id == NRF_BLE_GATT_EVT_ATT_MTU_UPDATED))
+    if ((m_conn_handle == p_evt->conn_handle) && (p_evt->evt_id == NRF_BLE_GATT_EVT_ATT_MTU_UPDATED))
     {
         m_ble_nus_max_data_len = p_evt->params.att_mtu_effective - OPCODE_LENGTH - HANDLE_LENGTH;
     }
@@ -338,7 +361,7 @@ static void services_init(void)
 
     nus_init.data_handler = nus_data_handler;
 
-    err_code = ble_nus_init(soft_get_nus(), &nus_init);
+    err_code = ble_nus_init(&m_nus, &nus_init);
     APP_ERROR_CHECK(err_code);
 }
 
@@ -365,27 +388,10 @@ static void nrf_qwr_error_handler(uint32_t nrf_error)
  */
 static void nus_data_handler(ble_nus_evt_t * p_evt)
 {
-#ifdef BLE_UART_ECHO
     if (p_evt->type == BLE_NUS_EVT_RX_DATA)
     {
-        uint32_t err_code;
-        for (uint32_t i = 0; i < p_evt->params.rx_data.length; i++)
-        {
-            do
-            {
-                err_code = app_uart_put(p_evt->params.rx_data.p_data[i]);
-                if ((err_code != NRF_SUCCESS) && (err_code != NRF_ERROR_BUSY))
-                {
-                    APP_ERROR_CHECK(err_code);
-                }
-            } while (err_code == NRF_ERROR_BUSY);
-        }
-        if (p_evt->params.rx_data.p_data[p_evt->params.rx_data.length - 1] == '\r')
-        {
-            while (app_uart_put('\n') == NRF_ERROR_BUSY);
-        }
+        nrf_gpio_pin_toggle(TEST_LED);
     }
-#endif
 }
 
 /**
@@ -478,7 +484,7 @@ static void on_conn_params_evt(ble_conn_params_evt_t * p_evt)
 
     if (p_evt->evt_type == BLE_CONN_PARAMS_EVT_FAILED)
     {
-        err_code = sd_ble_gap_disconnect(*(soft_get_conn_handle()), BLE_HCI_CONN_INTERVAL_UNACCEPTABLE);
+        err_code = sd_ble_gap_disconnect(m_conn_handle, BLE_HCI_CONN_INTERVAL_UNACCEPTABLE);
         APP_ERROR_CHECK(err_code);
     }
 }

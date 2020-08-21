@@ -54,10 +54,10 @@
   <Watches active="0" update="Never"/>
  </Watch4>
  <Files>
-  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="89" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../main.c" selected="1" top="51" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="89" useTextEdit="1" openedFrom="" useBinaryEdit="0" left="0" path="../../../main.c" selected="1" top="43" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="470" useTextEdit="1" openedFrom="/Users/raulcamacho/Documents/Nordic/nRF5_SDK_17.0.0_9d13099/examples/_programs/ipac_ble_perif/main.c" useBinaryEdit="0" left="0" path="../../../../../../components/libraries/bsp/bsp.c" selected="0" top="456" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" openedFrom="/Users/raulcamacho/Documents/Nordic/nRF5_SDK_17.0.0_9d13099/components/libraries/bsp/bsp_btn_ble.h" useBinaryEdit="0" left="0" path="../../../../../../components/libraries/bsp/bsp.h" selected="0" top="53" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="116" useTextEdit="1" openedFrom="/Users/raulcamacho/Documents/Nordic/nRF5_SDK_17.0.0_9d13099/examples/_programs/ipac_ble_perif/main.c" useBinaryEdit="0" left="0" path="../../../../../../components/libraries/button/app_button.h" selected="0" top="104" codecName="Default"/>
  </Files>
- <ARMCrossStudioWindow activeProject="ipac_ble_perif" fileDialogDefaultFilter="*.c" autoConnectTarget="J-Link" buildConfiguration="Release" sessionSettings="" debugSearchFileMap="" fileDialogInitialDirectory="/Users/raulcamacho/Documents/Nordic/nRF5_SDK_17.0.0_9d13099/examples/_programs/ipac_ble_perif/hardware" debugSearchPath="" autoConnectCapabilities="3711"/>
+ <ARMCrossStudioWindow activeProject="ipac_ble_perif" fileDialogDefaultFilter="*.c" autoConnectTarget="J-Link" buildConfiguration="Release" sessionSettings="" debugSearchFileMap="" fileDialogInitialDirectory="/Users/raulcamacho/Documents/Nordic/nRF5_SDK_17.0.0_9d13099/examples/_programs/ipac_ble_perif/hardware" debugSearchPath="" autoConnectCapabilities="3199"/>
 </session>

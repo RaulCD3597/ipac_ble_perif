@@ -8,9 +8,27 @@
 #ifndef _CONN_MANAGER_H_
 #define _CONN_MANAGER_H_
 
+// Standard libraries
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+
+// ble headers
+#include "ble_nus.h"
+#include "ble_types.h"
+
+/* ---------------- public definitions ----------------*/
+
+/* ------------------- public enums -------------------*/
+
 /* ----------------- public functions -----------------*/
 
 void conn_init(void);
+
 void conn_advertising_start(void);
+
+ble_nus_t * conn_get_nus(void);
+
+uint16_t * conn_get_conn_handle(void);
 
 #endif /* _CONN_MANAGER_H_ */

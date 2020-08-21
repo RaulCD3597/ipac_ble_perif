@@ -6,7 +6,7 @@
 
 // ipac headers
 #include "hardware.h"
-#include "soft_util.h"
+#include "conn_manager.h"
 
 // Nordic common library
 #include "nordic_common.h"
@@ -138,7 +138,7 @@ static void uart_event_handle(app_uart_evt_t * p_event)
                     do
                     {
                         uint16_t length = (uint16_t)index;
-                        err_code = ble_nus_data_send(soft_get_nus(), data_array, &length, *(soft_get_conn_handle()));
+                        err_code = ble_nus_data_send(conn_get_nus(), data_array, &length, *(conn_get_conn_handle()));
                         if ((err_code != NRF_ERROR_INVALID_STATE) &&
                             (err_code != NRF_ERROR_RESOURCES) &&
                             (err_code != NRF_ERROR_NOT_FOUND))
@@ -186,6 +186,9 @@ static void buttons_leds_init(void)
     nrf_gpio_cfg_output(CONNECTED_LED);
     nrf_gpio_pin_set(CONNECTED_LED);
 
+    nrf_gpio_cfg_output(TEST_LED);
+    nrf_gpio_pin_set(TEST_LED);
+
     ret_code_t err_code;
 
     //The array must be static because a pointer to it will be saved in the button handler module.
@@ -219,7 +222,7 @@ static void button_event_handler(uint8_t pin_no, uint8_t button_action)
                 do
                 {
                     uint16_t length = (uint16_t)9;
-                    err_code = ble_nus_data_send(soft_get_nus(), data_array[0], &length, *(soft_get_conn_handle()));
+                    err_code = ble_nus_data_send(conn_get_nus(), data_array[0], &length, *(conn_get_conn_handle()));
                     if ((err_code != NRF_ERROR_INVALID_STATE) &&
                         (err_code != NRF_ERROR_RESOURCES) && (err_code != NRF_ERROR_NOT_FOUND))
                     {
@@ -235,7 +238,7 @@ static void button_event_handler(uint8_t pin_no, uint8_t button_action)
                 do
                 {
                     uint16_t length = (uint16_t)9;
-                    err_code = ble_nus_data_send(soft_get_nus(), data_array[1], &length, *(soft_get_conn_handle()));
+                    err_code = ble_nus_data_send(conn_get_nus(), data_array[1], &length, *(conn_get_conn_handle()));
                     if ((err_code != NRF_ERROR_INVALID_STATE) &&
                         (err_code != NRF_ERROR_RESOURCES) && (err_code != NRF_ERROR_NOT_FOUND))
                     {

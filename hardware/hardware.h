@@ -10,14 +10,15 @@
 
 /* ---------------- public definitions ----------------*/
 
-#define CONNECTED_LED             17
-#define EMERGENCY_BUTTON          13
-#define SERVICE_BUTTON            15
+#define CONNECTED_LED               17
+#define TEST_LED                    19
+#define EMERGENCY_BUTTON            13
+#define SERVICE_BUTTON              15
 /**
  * Value used as error code on stack dump, can be used to identify 
  * stack location on stack unwind.
  */
-#define DEAD_BEEF                       0xDEADBEEF
+#define DEAD_BEEF                   0xDEADBEEF
 
 /* ------------------- public enums -------------------*/
 

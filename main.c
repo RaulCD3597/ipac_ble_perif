@@ -7,7 +7,6 @@
 // ipac headers
 #include "conn_manager.h"
 #include "hardware.h"
-#include "soft_util.h"
 
 // Nordic common library
 #include "nordic_common.h"
