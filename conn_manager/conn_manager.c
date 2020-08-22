@@ -390,7 +390,26 @@ static void nus_data_handler(ble_nus_evt_t * p_evt)
 {
     if (p_evt->type == BLE_NUS_EVT_RX_DATA)
     {
-        nrf_gpio_pin_toggle(TEST_LED);
+        uint8_t * received = (uint8_t *)p_evt->params.rx_data.p_data;
+
+        if (NULL != (received = (uint8_t *)strstr((const char *)received, "\"on_call\":")))
+        {
+            received += strlen("\"on_call\":");
+            while (' ' == * received)
+            {
+                received++;
+            }
+            if (!memcmp(received, "true", 4))
+            {
+                // enable audio send
+                nrf_gpio_pin_clear(TEST_LED);
+            }
+            else if (!memcmp(received, "false", 5))
+            {
+                // disable audio send
+                nrf_gpio_pin_set(TEST_LED);
+            }
+        }
     }
 }
 
