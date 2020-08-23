@@ -14,6 +14,7 @@
 // nrf drivers
 #include "nrf.h"
 #include "nrf_gpio.h"
+#include "nrf_delay.h"
 #if defined (UART_PRESENT)
 #include "nrf_uart.h"
 #endif
@@ -32,13 +33,16 @@
 
 /* ----------------  local definitions ----------------*/
 
-#define BUTTON_DETECTION_DELAY    APP_TIMER_TICKS(50)
-#define RX_PIN_NUMBER             8
-#define TX_PIN_NUMBER             6
-#define RTS_PIN_NUMBER            5
-#define CTS_PIN_NUMBER            7
-#define UART_TX_BUF_SIZE          256 /**< UART TX buffer size. */
-#define UART_RX_BUF_SIZE          256 /**< UART RX buffer size. */
+#define BUTTON_DETECTION_DELAY      APP_TIMER_TICKS(50)
+#define RX_PIN_NUMBER               8
+#define TX_PIN_NUMBER               6
+#define RTS_PIN_NUMBER              5
+#define CTS_PIN_NUMBER              7
+#define UART_TX_BUF_SIZE            256 /**< UART TX buffer size. */
+#define UART_RX_BUF_SIZE            256 /**< UART RX buffer size. */
+#define REGISTER_CMD                "{\"id\": 4 , \"bed\": %d}"
+#define EMERGENCY_CMD               "{\"id\": 1 , \"bed\": %d}"
+#define SERVICE_CMD                 "{\"id\": 2 , \"bed\": %d}"
 
 /* -----------------  local variables -----------------*/
 
@@ -212,39 +216,103 @@ static void buttons_leds_init(void)
 static void button_event_handler(uint8_t pin_no, uint8_t button_action)
 {
     ret_code_t err_code;
-    uint8_t data_array[2][10] = { "{\"id\": 1}", "{\"id\": 2}" };
+    APP_TIMER_DEF(m_button_tick_timer);
+    static uint32_t pressed_time;
+    static uint32_t released_time;
+    static bool config = false;
+    bool ready = conn_is_ready();
+    static uint8_t bed = 1;
 
     switch (pin_no)
     {
         case EMERGENCY_BUTTON:
-            if (APP_BUTTON_PUSH == button_action)
+            if (APP_BUTTON_RELEASE == button_action)
             {
-                do
+                released_time = app_timer_cnt_get();
+                err_code = app_timer_stop(m_button_tick_timer);
+                APP_ERROR_CHECK(err_code);
+                pressed_time = app_timer_cnt_diff_compute(released_time, pressed_time);
+                if (30000 < pressed_time)
                 {
-                    uint16_t length = (uint16_t)9;
-                    err_code = ble_nus_data_send(conn_get_nus(), data_array[0], &length, *(conn_get_conn_handle()));
-                    if ((err_code != NRF_ERROR_INVALID_STATE) &&
-                        (err_code != NRF_ERROR_RESOURCES) && (err_code != NRF_ERROR_NOT_FOUND))
+                    config = config? false : true;
+                    nrf_gpio_pin_toggle(TEST_LED);
+                    break;
+                }
+                if (!config)
+                {
+                    if (!ready)
                     {
-                        APP_ERROR_CHECK(err_code);
+                        break;
                     }
-                } while (err_code == NRF_ERROR_RESOURCES);
+                    uint8_t cmd_str[20];
+                    sprintf((char * restrict)cmd_str, EMERGENCY_CMD, bed);
+                    do
+                    {
+                        uint16_t length = strlen((const char *)cmd_str);
+                        err_code = ble_nus_data_send(conn_get_nus(), cmd_str, &length, *(conn_get_conn_handle()));
+                        if ((err_code != NRF_ERROR_INVALID_STATE) &&
+                            (err_code != NRF_ERROR_RESOURCES) && (err_code != NRF_ERROR_NOT_FOUND))
+                        {
+                            APP_ERROR_CHECK(err_code);
+                        }
+                    } while (err_code == NRF_ERROR_RESOURCES);
+                }
+                else if (!ready)
+                {
+                    bed++;
+                    bed = (7 < bed)? 1 : bed;
+                    for (uint8_t i = 0; i < (bed * 2); i++)
+                    {
+                        nrf_gpio_pin_toggle(TEST_LED);
+                        nrf_delay_ms(500);
+                    }
+                }
+            }
+            else
+            {
+                err_code = app_timer_start(m_button_tick_timer, UINT16_MAX, NULL);
+                APP_ERROR_CHECK(err_code);
+                pressed_time = app_timer_cnt_get();
             }
             break;
 
         case SERVICE_BUTTON:
-            if (APP_BUTTON_PUSH == button_action)
+            if (APP_BUTTON_RELEASE == button_action)
             {
-                do
+                if (!config)
                 {
-                    uint16_t length = (uint16_t)9;
-                    err_code = ble_nus_data_send(conn_get_nus(), data_array[1], &length, *(conn_get_conn_handle()));
-                    if ((err_code != NRF_ERROR_INVALID_STATE) &&
-                        (err_code != NRF_ERROR_RESOURCES) && (err_code != NRF_ERROR_NOT_FOUND))
+                    if (!ready)
                     {
-                        APP_ERROR_CHECK(err_code);
+                        break;
                     }
-                } while (err_code == NRF_ERROR_RESOURCES);
+                    uint8_t cmd_str[20];
+                    sprintf((char * restrict)cmd_str, SERVICE_CMD, bed);
+                    do
+                    {
+                        uint16_t length = strlen((const char *)cmd_str);
+                        err_code = ble_nus_data_send(conn_get_nus(), cmd_str, &length, *(conn_get_conn_handle()));
+                        if ((err_code != NRF_ERROR_INVALID_STATE) &&
+                            (err_code != NRF_ERROR_RESOURCES) && (err_code != NRF_ERROR_NOT_FOUND))
+                        {
+                            APP_ERROR_CHECK(err_code);
+                        }
+                    } while (err_code == NRF_ERROR_RESOURCES);
+                }
+                else if (!ready)
+                {
+                    uint8_t cmd_str[20];
+                    sprintf((char * restrict)cmd_str, REGISTER_CMD, bed);
+                    do
+                    {
+                        uint16_t length = strlen((const char *)cmd_str);
+                        err_code = ble_nus_data_send(conn_get_nus(), cmd_str, &length, *(conn_get_conn_handle()));
+                        if ((err_code != NRF_ERROR_INVALID_STATE) &&
+                            (err_code != NRF_ERROR_RESOURCES) && (err_code != NRF_ERROR_NOT_FOUND))
+                        {
+                            APP_ERROR_CHECK(err_code);
+                        }
+                    } while (err_code == NRF_ERROR_RESOURCES);
+                }
             }
             break;
 

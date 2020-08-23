@@ -25,6 +25,7 @@
 #include "app_uart.h"
 #include "app_util_platform.h"
 #include "app_button.h"
+#include "app_error.h"
 
 // ble headers
 #include "ble_hci.h"
@@ -129,6 +130,10 @@ static ble_uuid_t m_adv_uuids[]          =
 {
     {BLE_UUID_NUS_SERVICE, NUS_SERVICE_UUID_TYPE}
 };
+/**
+ * connection ready flag.
+ */
+static bool conn_ready = false;
 
 /* ------------ local functions prototypes ------------*/
 
@@ -143,7 +148,6 @@ static void nus_data_handler(ble_nus_evt_t * p_evt);
 static void advertising_init(void);
 static void on_adv_evt(ble_adv_evt_t ble_adv_evt);
 static void conn_params_init(void);
-static void on_conn_params_evt(ble_conn_params_evt_t * p_evt);
 static void conn_params_error_handler(uint32_t nrf_error);
 
 /* ----------------- public functions -----------------*/
@@ -171,7 +175,7 @@ void conn_advertising_start(void)
 }
 
 /**
- * @brief fuction for get the nus instace
+ * @brief function to get the nus instace
  */
 ble_nus_t * conn_get_nus(void)
 {
@@ -179,11 +183,27 @@ ble_nus_t * conn_get_nus(void)
 }
 
 /**
- * @brief fuction for get the connection handle
+ * @brief function to get the connection handle
  */
 uint16_t * conn_get_conn_handle(void)
 {
     return ((uint16_t *)&m_conn_handle);
+}
+
+/**
+ * @brief function to know if connection is ready with central
+ */
+bool conn_is_ready(void)
+{
+    return conn_ready;
+}
+
+/**
+ * @brief function to set connection as ready with central
+ */
+void conn_set_ready(void)
+{
+    conn_ready = true;
 }
 
 /* -----------------  local functions -----------------*/
@@ -410,6 +430,14 @@ static void nus_data_handler(ble_nus_evt_t * p_evt)
                 nrf_gpio_pin_set(TEST_LED);
             }
         }
+        else
+        {
+            received = (uint8_t *)p_evt->params.rx_data.p_data;
+            if (!memcmp(received, "OK", 2))
+            {
+                conn_ready = true;
+            }
+        }
     }
 }
 
@@ -477,35 +505,12 @@ static void conn_params_init(void)
     cp_init.next_conn_params_update_delay  = NEXT_CONN_PARAMS_UPDATE_DELAY;
     cp_init.max_conn_params_update_count   = MAX_CONN_PARAMS_UPDATE_COUNT;
     cp_init.start_on_notify_cccd_handle    = BLE_GATT_HANDLE_INVALID;
-    cp_init.disconnect_on_fail             = false;
-    cp_init.evt_handler                    = on_conn_params_evt;
+    cp_init.disconnect_on_fail             = true;
+    cp_init.evt_handler                    = NULL;
     cp_init.error_handler                  = conn_params_error_handler;
 
     err_code = ble_conn_params_init(&cp_init);
     APP_ERROR_CHECK(err_code);
-}
-
-/**
- * @brief Function for handling an event from the Connection Parameters Module.
- *
- * @details This function will be called for all events in the Connection Parameters Module
- *          which are passed to the application.
- *
- * @note All this function does is to disconnect. This could have been done by simply setting
- *       the disconnect_on_fail config parameter, but instead we use the event handler
- *       mechanism to demonstrate its use.
- *
- * @param[in] p_evt  Event received from the Connection Parameters Module.
- */
-static void on_conn_params_evt(ble_conn_params_evt_t * p_evt)
-{
-    uint32_t err_code;
-
-    if (p_evt->evt_type == BLE_CONN_PARAMS_EVT_FAILED)
-    {
-        err_code = sd_ble_gap_disconnect(m_conn_handle, BLE_HCI_CONN_INTERVAL_UNACCEPTABLE);
-        APP_ERROR_CHECK(err_code);
-    }
 }
 
 /**
