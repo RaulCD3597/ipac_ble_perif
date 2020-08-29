@@ -31,8 +31,4 @@ ble_nus_t * conn_get_nus(void);
 
 uint16_t * conn_get_conn_handle(void);
 
-bool conn_is_ready(void);
-
-void conn_set_ready(void);
-
 #endif /* _CONN_MANAGER_H_ */

@@ -44,10 +44,6 @@
  */
 #define APP_BLE_CONN_CFG_TAG            1
 /**
- * Name of device. Will be included in the advertising data.
- */
-#define DEVICE_NAME                     "IPAC_perif"
-/**
  * UUID type for the Nordic UART Service (vendor specific).
  */
 #define NUS_SERVICE_UUID_TYPE           BLE_UUID_TYPE_VENDOR_BEGIN
@@ -131,9 +127,9 @@ static ble_uuid_t m_adv_uuids[]          =
     {BLE_UUID_NUS_SERVICE, NUS_SERVICE_UUID_TYPE}
 };
 /**
- * connection ready flag.
+ * Name of device. Will be included in the advertising data.
  */
-static bool conn_ready = false;
+static uint8_t device_name[25];
 
 /* ------------ local functions prototypes ------------*/
 
@@ -157,6 +153,7 @@ static void conn_params_error_handler(uint32_t nrf_error);
  */
 void conn_init(void)
 {
+    sprintf((char *)device_name, "%lu%lu", NRF_FICR->DEVICEID[0], NRF_FICR->DEVICEID[1]);
     ble_stack_init();
     gap_params_init();
     gatt_init();
@@ -188,22 +185,6 @@ ble_nus_t * conn_get_nus(void)
 uint16_t * conn_get_conn_handle(void)
 {
     return ((uint16_t *)&m_conn_handle);
-}
-
-/**
- * @brief function to know if connection is ready with central
- */
-bool conn_is_ready(void)
-{
-    return conn_ready;
-}
-
-/**
- * @brief function to set connection as ready with central
- */
-void conn_set_ready(void)
-{
-    conn_ready = true;
 }
 
 /* -----------------  local functions -----------------*/
@@ -321,8 +302,8 @@ static void gap_params_init(void)
     BLE_GAP_CONN_SEC_MODE_SET_OPEN(&sec_mode);
 
     err_code = sd_ble_gap_device_name_set(&sec_mode,
-                                          (const uint8_t *) DEVICE_NAME,
-                                          strlen(DEVICE_NAME));
+                                          (const uint8_t *) device_name,
+                                          strlen((char *)device_name));
     APP_ERROR_CHECK(err_code);
 
     memset(&gap_conn_params, 0, sizeof(gap_conn_params));
@@ -428,14 +409,6 @@ static void nus_data_handler(ble_nus_evt_t * p_evt)
             {
                 // disable audio send
                 nrf_gpio_pin_set(TEST_LED);
-            }
-        }
-        else
-        {
-            received = (uint8_t *)p_evt->params.rx_data.p_data;
-            if (!memcmp(received, "OK", 2))
-            {
-                conn_ready = true;
             }
         }
     }
