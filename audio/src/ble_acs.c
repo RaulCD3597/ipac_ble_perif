@@ -10,13 +10,14 @@
 #include "sdk_common.h"
 
 #define BLE_UUID_ACS_CONFIG_CHAR      0x0501                      /**< The UUID of the config Characteristic. */
-#define BLE_UUID_ACS_MIC_CHAR         0x0504                      /**< The UUID of the microphone Characteristic. */
+#define BLE_UUID_ACS_MIC_CHAR         0x0502                      /**< The UUID of the microphone Characteristic. */
 
 #define BLE_ACS_MAX_RX_CHAR_LEN        BLE_ACS_MAX_DATA_LEN        /**< Maximum length of the RX Characteristic (in bytes). */
 #define BLE_ACS_MAX_TX_CHAR_LEN        BLE_ACS_MAX_DATA_LEN        /**< Maximum length of the TX Characteristic (in bytes). */
 
-// EF68xxxx-9B35-4933-9B10-52FFA9740042
- #define ACS_BASE_UUID  {{0x42, 0x00, 0x74, 0xA9, 0xFF, 0x52, 0x10, 0x9B, 0x33, 0x49, 0x35, 0x9B, 0x00, 0x00, 0x68, 0xEF}} /**< Used vendor specific UUID. */
+// 50E9xxxx-693A-4E74-B11F-C91C353C4263
+ #define ACS_BASE_UUID  {{0x63, 0x42, 0x3C, 0x35, 0x1C, 0xC9, 0x1F, 0xB1, \
+                          0x74, 0x4E, 0x3A, 0x69, 0x00, 0x00, 0xE9, 0x50}} /**< Used vendor specific UUID. */
 
 /**@brief Function for handling the @ref BLE_GAP_EVT_CONNECTED event from the S132 SoftDevice.
  *
@@ -157,12 +158,12 @@ static uint32_t mic_char_add(ble_acs_t * p_acs, const ble_acs_init_t * p_acs_ini
 
     memset(&char_md, 0, sizeof(char_md));
 
-    char_md.char_props.notify = 1;
-    char_md.p_char_user_desc  = NULL;
-    char_md.p_char_pf         = NULL;
-    char_md.p_user_desc_md    = NULL;
-    char_md.p_cccd_md         = &cccd_md;
-    char_md.p_sccd_md         = NULL;
+    char_md.char_props.notify   = 1;
+    char_md.p_char_user_desc    = NULL;
+    char_md.p_char_pf           = NULL;
+    char_md.p_user_desc_md      = NULL;
+    char_md.p_cccd_md           = &cccd_md;
+    char_md.p_sccd_md           = NULL;
 
     ble_uuid.type = p_acs->uuid_type;
     ble_uuid.uuid = BLE_UUID_ACS_MIC_CHAR;
