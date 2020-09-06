@@ -4,6 +4,8 @@
  * @date July 2020
  */
 
+#pragma GCC optimize ("O0")
+
 // ipac headers
 #include "conn_manager.h"
 #include "hardware.h"
@@ -111,6 +113,10 @@ BLE_ADVERTISING_DEF(m_advertising);
  */
 BLE_NUS_DEF(m_nus, NRF_SDH_BLE_TOTAL_LINK_COUNT);
 /**
+ * BLE ACS service instance.
+ */
+BLE_ACS_DEF(m_acs);
+/**
  * Handle of the current connection.
  */
 static uint16_t   m_conn_handle          = BLE_CONN_HANDLE_INVALID;
@@ -124,12 +130,13 @@ static uint16_t   m_ble_nus_max_data_len = BLE_GATT_ATT_MTU_DEFAULT - 3;
  */
 static ble_uuid_t m_adv_uuids[]          =
 {
-    {BLE_UUID_NUS_SERVICE, NUS_SERVICE_UUID_TYPE}
+    {BLE_UUID_NUS_SERVICE, NUS_SERVICE_UUID_TYPE},
+    {BLE_UUID_ACS_SERVICE, BLE_UUID_TYPE_VENDOR_BEGIN+1}
 };
 /**
  * Name of device. Will be included in the advertising data.
  */
-static uint8_t device_name[25];
+static uint8_t device_name[21];
 
 /* ------------ local functions prototypes ------------*/
 
@@ -145,6 +152,10 @@ static void advertising_init(void);
 static void on_adv_evt(ble_adv_evt_t ble_adv_evt);
 static void conn_params_init(void);
 static void conn_params_error_handler(uint32_t nrf_error);
+static void ble_acs_evt_handler(ble_acs_t           * p_acs, 
+                                ble_acs_evt_type_t  evt_type, 
+                                u_int8_t            * p_data, 
+                                u_int16_t           length);
 
 /* ----------------- public functions -----------------*/
 
@@ -347,9 +358,11 @@ static void gatt_evt_handler(nrf_ble_gatt_t * p_gatt, nrf_ble_gatt_evt_t const *
  */
 static void services_init(void)
 {
-    uint32_t           err_code;
-    ble_nus_init_t     nus_init;
-    nrf_ble_qwr_init_t qwr_init = {0};
+    uint32_t            err_code;
+    ble_nus_init_t      nus_init;
+    ble_acs_init_t      acs_init;
+    ble_acs_config_t    acs_init_cfg;
+    nrf_ble_qwr_init_t  qwr_init = {0};
 
     // Initialize Queued Write Module.
     qwr_init.error_handler = nrf_qwr_error_handler;
@@ -363,6 +376,16 @@ static void services_init(void)
     nus_init.data_handler = nus_data_handler;
 
     err_code = ble_nus_init(&m_nus, &nus_init);
+    APP_ERROR_CHECK(err_code);
+
+    // Initialize ACS.
+    memset(&acs_init, 0, sizeof(acs_init));
+
+    acs_init_cfg.mic_mode   = BLE_ACS_MIC_MODE_ADPCM;
+    acs_init.p_init_config  = &acs_init_cfg;
+    acs_init.evt_handler    = ble_acs_evt_handler;
+
+    err_code = ble_acs_init(&m_acs, &acs_init);
     APP_ERROR_CHECK(err_code);
 }
 
@@ -428,8 +451,11 @@ static void advertising_init(void)
     init.advdata.include_appearance = false;
     init.advdata.flags              = BLE_GAP_ADV_FLAGS_LE_ONLY_LIMITED_DISC_MODE;
 
-    init.srdata.uuids_complete.uuid_cnt = sizeof(m_adv_uuids) / sizeof(m_adv_uuids[0]);
-    init.srdata.uuids_complete.p_uuids  = m_adv_uuids;
+    init.advdata.uuids_more_available.uuid_cnt = 1;
+    init.advdata.uuids_more_available.p_uuids = &m_adv_uuids[0];
+
+    init.srdata.uuids_complete.uuid_cnt = 1;
+    init.srdata.uuids_complete.p_uuids  = &m_adv_uuids[1];
 
     init.config.ble_adv_fast_enabled  = true;
     init.config.ble_adv_fast_interval = APP_ADV_INTERVAL;
@@ -494,4 +520,47 @@ static void conn_params_init(void)
 static void conn_params_error_handler(uint32_t nrf_error)
 {
     APP_ERROR_HANDLER(nrf_error);
+}
+
+/**
+ * @brief Function for handling ACS service events.
+ * 
+ * @details This function will process the data received from the Audio Custom BLE Service.
+ *
+ * @param[in] p_tes    Audio Custom Service structure.
+ * @param[in] evt_type Audio Custom Service event type.
+ * @param[in] p_data   Event data.
+ * @param[in] length   Length of the data.
+ */
+static void ble_acs_evt_handler(ble_acs_t           * p_acs, 
+                                ble_acs_evt_type_t  evt_type, 
+                                u_int8_t            * p_data, 
+                                u_int16_t           length)
+{
+    // u_int32_t err_code;
+    
+    switch (evt_type)
+    {
+        case BLE_ACS_EVT_NOTIF_MIC:
+            if (p_acs->is_mic_notif_enabled)
+            {
+                // por ahora nada revisar mas tarde
+            }
+            else
+            {
+                // por ahora nada revisar mas tarde
+            }
+            break;
+
+        case BLE_ACS_EVT_CONFIG_RECEIVED:
+        {
+            APP_ERROR_CHECK_BOOL(length == sizeof(ble_acs_config_t));
+
+            // ble_acs_config_t * p_config = (ble_acs_config_t *)p_data;
+        }
+        break;
+
+        default:
+            break;
+    }
 }

@@ -16,6 +16,7 @@
 // ble headers
 #include "ble_nus.h"
 #include "ble_types.h"
+#include "ble_acs.h"
 
 /* ---------------- public definitions ----------------*/
 
