@@ -2414,7 +2414,7 @@
 // <e> NRFX_PDM_ENABLED - nrfx_pdm - PDM peripheral driver
 //==========================================================
 #ifndef NRFX_PDM_ENABLED
-#define NRFX_PDM_ENABLED 0
+#define NRFX_PDM_ENABLED 1
 #endif
 // <o> NRFX_PDM_CONFIG_MODE  - Mode
  

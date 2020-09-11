@@ -7,6 +7,7 @@
 // ipac headers
 #include "hardware.h"
 #include "conn_manager.h"
+#include "drv_audio.h"
 
 // Nordic common library
 #include "nordic_common.h"
@@ -22,6 +23,7 @@
 #include "nrf_uarte.h"
 #endif
 #include "nrf_pwr_mgmt.h"
+#include "nrf_balloc.h"
 
 // nrf app headers
 #include "app_timer.h"
@@ -46,6 +48,10 @@
 
 /* -----------------  local variables -----------------*/
 
+NRF_BALLOC_DEF(m_buffer_audio, 
+               (sizeof(int16_t) * 256),
+               80);
+
 /* ------------ local functions prototypes ------------*/
 
 static void uart_init(void);
@@ -53,6 +59,7 @@ static void uart_event_handle(app_uart_evt_t * p_event);
 static void timers_init(void);
 static void buttons_leds_init(void);
 static void button_event_handler(uint8_t pin_no, uint8_t button_action);
+static void m_audio_buffer_handler(int16_t * p_buffer);
 
 /* ----------------- public functions -----------------*/
 
@@ -64,6 +71,8 @@ void hardware_init(void)
     uart_init();
     timers_init();
     buttons_leds_init();
+    dvr_audio_init(m_buffer_audio, m_audio_buffer_handler);
+    drv_audio_enable();
 }
 
 /**
@@ -259,4 +268,9 @@ static void button_event_handler(uint8_t pin_no, uint8_t button_action)
             APP_ERROR_HANDLER(pin_no);
             break;
     }
+}
+
+static void m_audio_buffer_handler(int16_t * p_buffer)
+{
+    return;
 }
