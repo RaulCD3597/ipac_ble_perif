@@ -71,7 +71,7 @@ void hardware_init(void)
     uart_init();
     timers_init();
     buttons_leds_init();
-    dvr_audio_init(m_buffer_audio, m_audio_buffer_handler);
+    dvr_audio_init(m_audio_buffer_handler);
     drv_audio_enable();
 }
 

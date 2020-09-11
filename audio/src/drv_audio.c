@@ -28,7 +28,7 @@ STATIC_ASSERT(PDM_CONFIG_CLOCK_FREQ == NRF_PDM_FREQ_1032K);
 #define SAMPLING_RATE   (1032 * 1000 / 64)
 
 static drv_audio_buffer_handler_t   m_buffer_handler;
-static nrf_balloc_t const *         mp_buffer_pool;
+static int16_t                      m_pdm_buff[2][CONFIG_PDM_BUFFER_SIZE_SAMPLES];
 static uint8_t                      m_skip_buffers;
 
 ret_code_t drv_audio_enable(void)
@@ -68,17 +68,8 @@ static void drv_audio_pdm_event_handler(nrfx_pdm_evt_t const *const p_evt)
 
     if(p_evt->buffer_requested)
     {
-        int16_t * p_buffer = nrf_balloc_alloc(mp_buffer_pool);
+        int16_t * p_buffer = (p_buffer_released == m_pdm_buff[0])? m_pdm_buff[1] : m_pdm_buff[0];
 
-        if(!p_buffer)
-        {
-            /*
-             * Se tiene que asignar un buffer libre para mantener el PDM activo.
-             * Como el pool esta vacio, la unica solucion es usar el buffer que acaba de soltar.
-             */
-            p_buffer            = p_buffer_released;
-            p_buffer_released   = NULL;
-        }
         if(p_buffer)
         {
             ret = nrfx_pdm_buffer_set(p_buffer, CONFIG_PDM_BUFFER_SIZE_SAMPLES);
@@ -89,7 +80,6 @@ static void drv_audio_pdm_event_handler(nrfx_pdm_evt_t const *const p_evt)
             if (m_skip_buffers)
             {
                 m_skip_buffers -= 1;
-                nrf_balloc_free(mp_buffer_pool, p_buffer_released);
             }
             else
             {
@@ -99,13 +89,12 @@ static void drv_audio_pdm_event_handler(nrfx_pdm_evt_t const *const p_evt)
     }
 }
 
-ret_code_t dvr_audio_init(nrf_balloc_t const * p_buffer_pool, drv_audio_buffer_handler_t buffer_handler)
+ret_code_t dvr_audio_init(drv_audio_buffer_handler_t buffer_handler)
 {
     nrfx_pdm_config_t pdm_cfg = NRFX_PDM_DEFAULT_CONFIG(CONFIG_IO_PDM_CLK,
                                                         CONFIG_IO_PDM_DATA);
 
     m_buffer_handler    = buffer_handler;
-    mp_buffer_pool      = p_buffer_pool;
     pdm_cfg.gain_l      = CONFIG_PDM_GAIN;
     pdm_cfg.gain_r      = CONFIG_PDM_GAIN;
 
