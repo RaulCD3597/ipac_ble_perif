@@ -23,7 +23,6 @@
 #include "nrf_uarte.h"
 #endif
 #include "nrf_pwr_mgmt.h"
-#include "nrf_balloc.h"
 
 // nrf app headers
 #include "app_timer.h"
@@ -48,9 +47,6 @@
 
 /* -----------------  local variables -----------------*/
 
-NRF_BALLOC_DEF(m_buffer_audio, 
-               (sizeof(int16_t) * 256),
-               80);
 
 /* ------------ local functions prototypes ------------*/
 

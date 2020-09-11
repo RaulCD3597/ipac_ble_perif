@@ -7,7 +7,6 @@
 #include "sdk_errors.h"
 #include "sdk_macros.h"
 #include "drv_audio_config.h"
-#include "nrf_balloc.h"
 
 /**@brief Audio buffer handler. */
 typedef void (*drv_audio_buffer_handler_t)(int16_t * p_buffer);
