@@ -7,7 +7,7 @@
 // ipac headers
 #include "hardware.h"
 #include "conn_manager.h"
-#include "drv_audio.h"
+#include "drv_mic.h"
 
 // Nordic common library
 #include "nordic_common.h"
@@ -55,6 +55,7 @@ static void uart_event_handle(app_uart_evt_t * p_event);
 static void timers_init(void);
 static void buttons_leds_init(void);
 static void button_event_handler(uint8_t pin_no, uint8_t button_action);
+static u_int32_t drv_mic_data_handler(m_audio_frame_t * p_frame);
 
 /* ----------------- public functions -----------------*/
 
@@ -63,9 +64,13 @@ static void button_event_handler(uint8_t pin_no, uint8_t button_action);
  */
 void hardware_init(void)
 {
+    uint32_t err_code;
+
     uart_init();
     timers_init();
     buttons_leds_init();
+    err_code = drv_mic_init(drv_mic_data_handler);
+    APP_ERROR_CHECK(err_code);
 }
 
 /**
@@ -144,7 +149,7 @@ static void uart_event_handle(app_uart_evt_t * p_event)
                     do
                     {
                         uint16_t length = (uint16_t)index;
-                        err_code = ble_nus_data_send(conn_get_nus(), data_array, &length, *(conn_get_conn_handle()));
+                        err_code = ble_nus_data_send(conn_get_nus_instace(), data_array, &length, *(conn_get_conn_handle()));
                         if ((err_code != NRF_ERROR_INVALID_STATE) &&
                             (err_code != NRF_ERROR_RESOURCES) &&
                             (err_code != NRF_ERROR_NOT_FOUND))
@@ -229,7 +234,7 @@ static void button_event_handler(uint8_t pin_no, uint8_t button_action)
                 do
                 {
                     uint16_t length = strlen((const char *)cmd_str);
-                    err_code = ble_nus_data_send(conn_get_nus(), cmd_str, &length, *(conn_get_conn_handle()));
+                    err_code = ble_nus_data_send(conn_get_nus_instace(), cmd_str, &length, *(conn_get_conn_handle()));
                     if ((err_code != NRF_ERROR_INVALID_STATE) &&
                         (err_code != NRF_ERROR_RESOURCES) && (err_code != NRF_ERROR_NOT_FOUND))
                     {
@@ -247,7 +252,7 @@ static void button_event_handler(uint8_t pin_no, uint8_t button_action)
                 do
                 {
                     uint16_t length = strlen((const char *)cmd_str);
-                    err_code = ble_nus_data_send(conn_get_nus(), cmd_str, &length, *(conn_get_conn_handle()));
+                    err_code = ble_nus_data_send(conn_get_nus_instace(), cmd_str, &length, *(conn_get_conn_handle()));
                     if ((err_code != NRF_ERROR_INVALID_STATE) &&
                         (err_code != NRF_ERROR_RESOURCES) && (err_code != NRF_ERROR_NOT_FOUND))
                     {
@@ -261,4 +266,11 @@ static void button_event_handler(uint8_t pin_no, uint8_t button_action)
             APP_ERROR_HANDLER(pin_no);
             break;
     }
+}
+
+static u_int32_t drv_mic_data_handler(m_audio_frame_t * p_frame)
+{
+    ble_acs_mic_set(conn_get_acs_instance(), p_frame->data, p_frame->data_size);
+
+    return NRF_SUCCESS;
 }

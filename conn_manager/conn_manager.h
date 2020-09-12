@@ -28,8 +28,10 @@ void conn_init(void);
 
 void conn_advertising_start(void);
 
-ble_nus_t * conn_get_nus(void);
+ble_nus_t * conn_get_nus_instace(void);
 
 uint16_t * conn_get_conn_handle(void);
+
+ble_acs_t * conn_get_acs_instance(void);
 
 #endif /* _CONN_MANAGER_H_ */

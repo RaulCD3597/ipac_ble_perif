@@ -9,6 +9,7 @@
 // ipac headers
 #include "conn_manager.h"
 #include "hardware.h"
+#include "drv_mic.h"
 
 // Nordic common library
 #include "nordic_common.h"
@@ -185,7 +186,7 @@ void conn_advertising_start(void)
 /**
  * @brief function to get the nus instace
  */
-ble_nus_t * conn_get_nus(void)
+ble_nus_t * conn_get_nus_instace(void)
 {
     return ((ble_nus_t *)&m_nus);
 }
@@ -196,6 +197,14 @@ ble_nus_t * conn_get_nus(void)
 uint16_t * conn_get_conn_handle(void)
 {
     return ((uint16_t *)&m_conn_handle);
+}
+
+/**
+ * @brief function to get the acs instace
+ */
+ble_acs_t * conn_get_acs_instance(void)
+{
+    return ((ble_acs_t *)&m_acs);
 }
 
 /* -----------------  local functions -----------------*/
@@ -537,18 +546,20 @@ static void ble_acs_evt_handler(ble_acs_t           * p_acs,
                                 u_int8_t            * p_data, 
                                 u_int16_t           length)
 {
-    // u_int32_t err_code;
+    u_int32_t err_code;
     
     switch (evt_type)
     {
         case BLE_ACS_EVT_NOTIF_MIC:
             if (p_acs->is_mic_notif_enabled)
             {
-                // por ahora nada revisar mas tarde
+                err_code = drv_mic_start();
+                APP_ERROR_CHECK(err_code);
             }
             else
             {
-                // por ahora nada revisar mas tarde
+                err_code = drv_mic_stop();
+                APP_ERROR_CHECK(err_code);
             }
             break;
 
