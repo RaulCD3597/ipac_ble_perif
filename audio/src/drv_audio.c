@@ -115,12 +115,12 @@ ret_code_t drv_audio_init(drv_audio_buffer_handler_t buffer_handler)
 #endif /* (CONFIG_PDM_MIC == CONFIG_PDM_MIC_LEFT) */
 
 #if CONFIG_PDM_MIC_PWR_CTRL_ENABLED
+    nrf_gpio_cfg_output(CONFIG_IO_PDM_MIC_PWR_CTRL);
 #if CONFIG_PDM_MIC_PWR_CTRL_ACT_LOW
     nrf_gpio_pin_set(CONFIG_IO_PDM_MIC_PWR_CTRL);
 #else /* !CONFIG_PDM_MIC_PWR_CTRL_ACT_LOW */
     nrf_gpio_pin_clear(CONFIG_IO_PDM_MIC_PWR_CTRL);
 #endif /* CONFIG_PDM_MIC_PWR_CTRL_ACT_LOW */
-    nrf_gpio_cfg_output(CONFIG_IO_PDM_MIC_PWR_CTRL);
 #endif /* CONFIG_PDM_MIC_PWR_CTRL_ENABLED */
 
     return nrfx_pdm_init(&pdm_cfg, drv_audio_pdm_event_handler);

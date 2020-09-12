@@ -148,11 +148,11 @@
 //     <16=>P0.16 <17=>P0.17 <18=>P0.18 <19=>P0.19 <20=>P0.20 <21=>P0.21 <22=>P0.22 <23=>P0.23
 //     <24=>P0.24 <25=>P0.25 <26=>P0.26 <27=>P0.27 <28=>P0.28 <29=>P0.29 <30=>P0.30 <31=>P0.31
 //     <0xFFFFFFFF=>Disable
-#define CONFIG_IO_PDM_MIC_PWR_CTRL 0xFFFFFFFF
+#define CONFIG_IO_PDM_MIC_PWR_CTRL MIC_PWR_CTRL
 
 // <q> PDM Microphone Power Control Pin Active Low
 // <i> Select this option if PDM Microphone Power Control signal is active-low.
-#define CONFIG_PDM_MIC_PWR_CTRL_ACT_LOW 1
+#define CONFIG_PDM_MIC_PWR_CTRL_ACT_LOW 0
 // </h>
 
 
