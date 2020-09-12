@@ -24,7 +24,7 @@
  * @param[in] p_acs     Audio Custom Service structure.
  * @param[in] p_ble_evt Pointer to the event received from BLE stack.
  */
-static void on_connect(ble_acs_t * p_acs, ble_evt_t * p_ble_evt)
+static void on_connect(ble_acs_t * p_acs, ble_evt_t const * p_ble_evt)
 {
     p_acs->conn_handle = p_ble_evt->evt.gap_evt.conn_handle;
 }
@@ -34,7 +34,7 @@ static void on_connect(ble_acs_t * p_acs, ble_evt_t * p_ble_evt)
  * @param[in] p_acs     Audio Custom Service structure.
  * @param[in] p_ble_evt Pointer to the event received from BLE stack.
  */
-static void on_disconnect(ble_acs_t * p_acs, ble_evt_t * p_ble_evt)
+static void on_disconnect(ble_acs_t * p_acs, ble_evt_t const * p_ble_evt)
 {
     UNUSED_PARAMETER(p_ble_evt);
     p_acs->conn_handle = BLE_CONN_HANDLE_INVALID;
@@ -45,9 +45,9 @@ static void on_disconnect(ble_acs_t * p_acs, ble_evt_t * p_ble_evt)
  * @param[in] p_acs     Audio Custom Service structure.
  * @param[in] p_ble_evt Pointer to the event received from BLE stack.
  */
-static void on_write(ble_acs_t * p_acs, ble_evt_t * p_ble_evt)
+static void on_write(ble_acs_t * p_acs, ble_evt_t const * p_ble_evt)
 {
-    ble_gatts_evt_write_t * p_evt_write = &p_ble_evt->evt.gatts_evt.params.write;
+    ble_gatts_evt_write_t const * p_evt_write = &p_ble_evt->evt.gatts_evt.params.write;
 
 
     if ( (p_evt_write->handle == p_acs->mic_handles.cccd_handle) &&
@@ -63,7 +63,7 @@ static void on_write(ble_acs_t * p_acs, ble_evt_t * p_ble_evt)
 
             if (p_acs->evt_handler != NULL)
             {
-                p_acs->evt_handler(p_acs, BLE_ACS_EVT_NOTIF_MIC, p_evt_write->data, p_evt_write->len);
+                p_acs->evt_handler(p_acs, BLE_ACS_EVT_NOTIF_MIC, (u_int8_t *)p_evt_write->data, p_evt_write->len);
             }
         }
     }
@@ -73,9 +73,9 @@ static void on_write(ble_acs_t * p_acs, ble_evt_t * p_ble_evt)
     }
 }
 
-static void on_authorize_req(ble_acs_t * p_acs, ble_evt_t * p_ble_evt)
+static void on_authorize_req(ble_acs_t * p_acs, ble_evt_t const * p_ble_evt)
 {
-    ble_gatts_evt_rw_authorize_request_t * p_evt_rw_authorize_request = &p_ble_evt->evt.gatts_evt.params.authorize_request;
+    ble_gatts_evt_rw_authorize_request_t const * p_evt_rw_authorize_request = &p_ble_evt->evt.gatts_evt.params.authorize_request;
     uint32_t err_code;
 
     if (p_evt_rw_authorize_request->type  == BLE_GATTS_AUTHORIZE_TYPE_WRITE)
@@ -125,7 +125,7 @@ static void on_authorize_req(ble_acs_t * p_acs, ble_evt_t * p_ble_evt)
             {
                 p_acs->evt_handler(p_acs,
                                    BLE_ACS_EVT_CONFIG_RECEIVED,
-                                   p_evt_rw_authorize_request->request.write.data,
+                                   (u_int8_t *)p_evt_rw_authorize_request->request.write.data,
                                    p_evt_rw_authorize_request->request.write.len);
             }
         }
@@ -246,12 +246,14 @@ static uint32_t config_char_add(ble_acs_t * p_acs, const ble_acs_init_t * p_acs_
                                            &p_acs->config_handles);
 }
 
-void ble_acs_on_ble_evt(ble_acs_t * p_acs, ble_evt_t * p_ble_evt)
+void ble_acs_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context)
 {
-    if ((p_acs == NULL) || (p_ble_evt == NULL))
+    if ((p_context == NULL) || (p_ble_evt == NULL))
     {
         return;
     }
+
+    ble_acs_t * p_acs = (ble_acs_t *) p_context;
 
     switch (p_ble_evt->header.evt_id)
     {

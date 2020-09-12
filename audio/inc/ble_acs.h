@@ -20,7 +20,10 @@
 #endif
 
 #define BLE_ACS_DEF(_name) \
-static ble_acs_t _name
+static ble_acs_t _name;  \
+NRF_SDH_BLE_OBSERVER(_name ## _obs, \
+                     BLE_ACS_BLE_OBSERVER_PRIO, \
+                     ble_acs_on_ble_evt, &_name)
 
 #define BLE_UUID_ACS_SERVICE 0x0500                             /**< The UUID of the Audio Custom Service. */
 #define BLE_ACS_MAX_DATA_LEN (BLE_GATT_ATT_MTU_DEFAULT - 3)     /**< Maximum length of data (in bytes) that can be transmitted to the peer by the Audio Custom service module. */
@@ -69,8 +72,8 @@ typedef struct ble_acs_s ble_acs_t;
 /**@brief Audio Custom Service event handler type. */
 typedef void (*ble_acs_evt_handler_t) (ble_acs_t        * p_acs,
                                        ble_acs_evt_type_t evt_type,
-                                       uint8_t          * p_data,
-                                       uint16_t           length);
+                                       u_int8_t         * p_data,
+                                       u_int16_t        length);
 
 /**@brief Audio Custom Service initialization structure.
  *
@@ -113,14 +116,14 @@ uint32_t ble_acs_init(ble_acs_t * p_acs, const ble_acs_init_t * p_acs_init);
 /**@brief Function for handling the Audio Custom Service's BLE events.
  *
  * @details The Audio Custom Service expects the application to call this function each time an
- * event is received from the S110 SoftDevice. This function processes the event if it
+ * event is received from the S132 SoftDevice. This function processes the event if it
  * is relevant and calls the Audio Custom Service event handler of the
  * application if necessary.
  *
- * @param[in] p_acs       Audio Custom Service structure.
- * @param[in] p_ble_evt   Event received from the S110 SoftDevice.
+ * @param[in] p_ble_evt     Event received from the SoftDevice.
+ * @param[in] p_context     Audio Custom Service structure.
  */
-void ble_acs_on_ble_evt(ble_acs_t * p_acs, ble_evt_t * p_ble_evt);
+void ble_acs_on_ble_evt(ble_evt_t const * p_ble_evt, void * p_context);
 
 /**@brief Function for sending microphone data.
  *
