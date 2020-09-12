@@ -26,10 +26,12 @@ STATIC_ASSERT(IS_IO_VALID(CONFIG_IO_PDM_MIC_PWR_CTRL));
 // Sampling rate depends on PDM configuration.
 STATIC_ASSERT(PDM_CONFIG_CLOCK_FREQ == NRF_PDM_FREQ_1032K);
 #define SAMPLING_RATE   (1032 * 1000 / 64)
+#define NUM_OF_BUFFERS  3
 
 static drv_audio_buffer_handler_t   m_buffer_handler;
-static int16_t                      m_pdm_buff[2][CONFIG_PDM_BUFFER_SIZE_SAMPLES];
-static uint8_t                      m_skip_buffers;
+static int16_t                      m_pdm_buff[NUM_OF_BUFFERS][CONFIG_PDM_BUFFER_SIZE_SAMPLES];
+static u_int8_t                     m_skip_buffers = 0;
+static u_int8_t                     next_buff_index = 0;
 
 ret_code_t drv_audio_enable(void)
 {
@@ -68,7 +70,11 @@ static void drv_audio_pdm_event_handler(nrfx_pdm_evt_t const *const p_evt)
 
     if(p_evt->buffer_requested)
     {
-        int16_t * p_buffer = (p_buffer_released == m_pdm_buff[0])? m_pdm_buff[1] : m_pdm_buff[0];
+        int16_t * p_buffer = m_pdm_buff[next_buff_index++];
+        if (NUM_OF_BUFFERS == next_buff_index)
+        {
+            next_buff_index = 0;
+        }
 
         if(p_buffer)
         {
