@@ -55,7 +55,6 @@ static void uart_event_handle(app_uart_evt_t * p_event);
 static void timers_init(void);
 static void buttons_leds_init(void);
 static void button_event_handler(uint8_t pin_no, uint8_t button_action);
-static void m_audio_buffer_handler(int16_t * p_buffer);
 
 /* ----------------- public functions -----------------*/
 
@@ -67,8 +66,6 @@ void hardware_init(void)
     uart_init();
     timers_init();
     buttons_leds_init();
-    dvr_audio_init(m_audio_buffer_handler);
-    drv_audio_enable();
 }
 
 /**
@@ -264,9 +261,4 @@ static void button_event_handler(uint8_t pin_no, uint8_t button_action)
             APP_ERROR_HANDLER(pin_no);
             break;
     }
-}
-
-static void m_audio_buffer_handler(int16_t * p_buffer)
-{
-    return;
 }

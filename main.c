@@ -19,8 +19,13 @@
 #include "app_error.h"
 #include "app_util.h"
 #include "app_util_platform.h"
+#include "app_scheduler.h"
+#include "app_timer.h"
 
 /* ----------------  local definitions ----------------*/
+
+#define SCHED_MAX_EVENT_DATA_SIZE   APP_TIMER_SCHED_EVENT_DATA_SIZE /**< Maximum size of scheduler events. */
+#define SCHED_QUEUE_SIZE            60  /**< Maximum number of events in the scheduler queue. */
 
 /* -----------------  local variables -----------------*/
 
@@ -58,6 +63,7 @@ static void power_management_init(void)
  */
 static void idle_state_handle(void)
 {
+    app_sched_execute();
     nrf_pwr_mgmt_run();
 }
 
@@ -69,6 +75,7 @@ static void idle_state_handle(void)
 int main(void)
 {
     // Initialize.
+    APP_SCHED_INIT(SCHED_MAX_EVENT_DATA_SIZE, SCHED_QUEUE_SIZE);
     hardware_init();
     power_management_init();
     conn_init();

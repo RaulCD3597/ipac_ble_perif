@@ -32,6 +32,6 @@ ret_code_t drv_audio_disable(void);
  * @retval NRF_ERROR_INVALID_PARAM
  * @retval NRF_ERROR_INTERNAL
  */
-ret_code_t dvr_audio_init(drv_audio_buffer_handler_t buffer_handler);
+ret_code_t drv_audio_init(drv_audio_buffer_handler_t buffer_handler);
 
 #endif /* _DRV_AUDIO_H_ */

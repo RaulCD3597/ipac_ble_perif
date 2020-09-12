@@ -46,6 +46,7 @@
 // Son los pines a los que se debe conectar el microfono.
 #define MIC_DOUT                 25
 #define MIC_CLK                  26
+#define MIC_PWR_CTRL             27
 
 #define IS_IO_VALID(io)             (((io) & ~0x1F) == 0)
 

@@ -95,7 +95,7 @@ static void drv_audio_pdm_event_handler(nrfx_pdm_evt_t const *const p_evt)
     }
 }
 
-ret_code_t dvr_audio_init(drv_audio_buffer_handler_t buffer_handler)
+ret_code_t drv_audio_init(drv_audio_buffer_handler_t buffer_handler)
 {
     nrfx_pdm_config_t pdm_cfg = NRFX_PDM_DEFAULT_CONFIG(CONFIG_IO_PDM_CLK,
                                                         CONFIG_IO_PDM_DATA);
