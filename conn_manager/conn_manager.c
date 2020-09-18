@@ -127,14 +127,6 @@ static uint16_t   m_conn_handle          = BLE_CONN_HANDLE_INVALID;
  */
 static uint16_t   m_ble_nus_max_data_len = BLE_GATT_ATT_MTU_DEFAULT - 3;
 /**
- * Universally unique service identifier.
- */
-static ble_uuid_t m_adv_uuids[]          =
-{
-    {BLE_UUID_NUS_SERVICE, NUS_SERVICE_UUID_TYPE},
-    {BLE_UUID_ACS_SERVICE, BLE_UUID_TYPE_VENDOR_BEGIN+1}
-};
-/**
  * Name of device. Will be included in the advertising data.
  */
 static uint8_t device_name[21];
@@ -459,12 +451,6 @@ static void advertising_init(void)
     init.advdata.name_type          = BLE_ADVDATA_FULL_NAME;
     init.advdata.include_appearance = false;
     init.advdata.flags              = BLE_GAP_ADV_FLAGS_LE_ONLY_LIMITED_DISC_MODE;
-
-    init.advdata.uuids_more_available.uuid_cnt = 1;
-    init.advdata.uuids_more_available.p_uuids = &m_adv_uuids[0];
-
-    init.srdata.uuids_complete.uuid_cnt = 1;
-    init.srdata.uuids_complete.p_uuids  = &m_adv_uuids[1];
 
     init.config.ble_adv_fast_enabled  = true;
     init.config.ble_adv_fast_interval = APP_ADV_INTERVAL;
