@@ -428,11 +428,15 @@ static void nus_data_handler(ble_nus_evt_t * p_evt)
             {
                 // enable audio send
                 nrf_gpio_pin_clear(TEST_LED);
+                u_int32_t err_code = drv_mic_start();
+                APP_ERROR_CHECK(err_code);
             }
             else if (!memcmp(received, "false", 5))
             {
                 // disable audio send
                 nrf_gpio_pin_set(TEST_LED);
+                u_int32_t err_code = drv_mic_stop();
+                APP_ERROR_CHECK(err_code);
             }
         }
     }
