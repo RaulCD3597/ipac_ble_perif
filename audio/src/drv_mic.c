@@ -5,14 +5,13 @@
 #include "nrf_gpio.h"
 #include "app_error.h"
 #include "app_util_platform.h"
-#include "drv_audio_coder.h"
+#include "g711.h"
 #include "app_scheduler.h"
 
-STATIC_ASSERT(CONFIG_PDM_BUFFER_SIZE_SAMPLES == (1 * CONFIG_AUDIO_FRAME_SIZE_SAMPLES));
 
 typedef struct
 {
-    int16_t  buf[CONFIG_PDM_BUFFER_SIZE_SAMPLES];
+    int16_t  buf[CONFIG_AUDIO_FRAME_SIZE_BYTES];
     uint16_t samples;
     bool     free;
 }pdm_buf_t;
@@ -42,26 +41,21 @@ static void mic_power_off(void)
 
 static void m_audio_process(void * p_event_data, uint16_t event_size)
 {
-    int16_t         * p_buffer;
     ret_code_t        status;
     m_audio_frame_t   frame_buf;
     pdm_buf_t       * p_pdm_buf = (pdm_buf_t *)(*(uint32_t *)p_event_data);
+    int16_t         * p_buffer = p_pdm_buf->buf;
 
     APP_ERROR_CHECK_BOOL(p_event_data != NULL);
     APP_ERROR_CHECK_BOOL(event_size > 0);
-    p_buffer = p_pdm_buf->buf;
-
-#if 0 // CONFIG_AUDIO_EQUALIZER_ENABLED -> no implementado, revisar thingy sdk para implemntar si es necesario
-    drv_audio_dsp_equalizer((q15_t *)p_buffer, CONFIG_AUDIO_FRAME_SIZE_SAMPLES);
-#endif /* CONFIG_AUDIO_EQUALIZER_ENABLED */
-
-#if 0 // CONFIG_AUDIO_GAIN_CONTROL_ENABLED-> no implementado, revisar thingy sdk para implemntar si es necesario
-    drv_audio_dsp_gain_control((q15_t *)p_buffer, CONFIG_AUDIO_FRAME_SIZE_SAMPLES);
-#endif /* CONFIG_AUDIO_GAIN_CONTROL_ENABLED */
 
     uint8_t nested;
     app_util_critical_region_enter(&nested);
-    drv_audio_coder_encode(p_buffer, &frame_buf);
+    for(uint16_t i = 0; i < CONFIG_AUDIO_FRAME_SIZE_BYTES; i++)
+    {
+        frame_buf.data[i] = linear2ulaw(*(p_buffer++));
+    }
+    frame_buf.data_size = CONFIG_AUDIO_FRAME_SIZE_BYTES;
     p_pdm_buf->free = true;
     app_util_critical_region_exit(nested);
 
@@ -83,7 +77,7 @@ static void m_audio_buffer_handler(int16_t * p_buffer)
     uint32_t     err_code;
     pdm_buf_t  * p_pdm_buf = NULL;
     uint32_t     pdm_buf_addr;
-    uint16_t samples = CONFIG_PDM_BUFFER_SIZE_SAMPLES;
+    uint16_t samples = CONFIG_AUDIO_FRAME_SIZE_BYTES;
 
     for(uint32_t i = 0; i < PDM_BUF_NUM; i++)
     {

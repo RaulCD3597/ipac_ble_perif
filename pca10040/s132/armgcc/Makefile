@@ -16,8 +16,7 @@ SRC_FILES += \
   $(PROJ_DIR)/audio/src/ble_acs.c \
   $(PROJ_DIR)/audio/src/drv_audio.c \
   $(PROJ_DIR)/audio/src/drv_mic.c \
-  $(PROJ_DIR)/audio/src/drv_audio_coder_adpcm.c \
-  $(PROJ_DIR)/audio/src/dvi_adpcm.c \
+  $(PROJ_DIR)/audio/src/g711.c \
   $(SDK_ROOT)/modules/nrfx/mdk/gcc_startup_nrf52.S \
   $(SDK_ROOT)/components/libraries/log/src/nrf_log_backend_rtt.c \
   $(SDK_ROOT)/components/libraries/log/src/nrf_log_backend_serial.c \

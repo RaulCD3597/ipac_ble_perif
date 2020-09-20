@@ -29,7 +29,7 @@ STATIC_ASSERT(PDM_CONFIG_CLOCK_FREQ == NRF_PDM_FREQ_1032K);
 #define NUM_OF_BUFFERS  3
 
 static drv_audio_buffer_handler_t   m_buffer_handler;
-static int16_t                      m_pdm_buff[NUM_OF_BUFFERS][CONFIG_PDM_BUFFER_SIZE_SAMPLES];
+static int16_t                      m_pdm_buff[NUM_OF_BUFFERS][CONFIG_AUDIO_FRAME_SIZE_BYTES];
 static u_int8_t                     m_skip_buffers = 0;
 static u_int8_t                     next_buff_index = 0;
 
@@ -78,7 +78,7 @@ static void drv_audio_pdm_event_handler(nrfx_pdm_evt_t const *const p_evt)
 
         if(p_buffer)
         {
-            ret = nrfx_pdm_buffer_set(p_buffer, CONFIG_PDM_BUFFER_SIZE_SAMPLES);
+            ret = nrfx_pdm_buffer_set(p_buffer, CONFIG_AUDIO_FRAME_SIZE_BYTES);
             APP_ERROR_CHECK(ret);
         }
         if(p_buffer_released)
