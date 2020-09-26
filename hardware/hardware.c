@@ -4,6 +4,8 @@
  * @date July 2020
  */
 
+#pragma GCC optimize ("O0")
+
 // ipac headers
 #include "hardware.h"
 #include "conn_manager.h"
@@ -23,6 +25,7 @@
 #include "nrf_uarte.h"
 #endif
 #include "nrf_pwr_mgmt.h"
+#include "nrf_drv_saadc.h"
 
 // nrf app headers
 #include "app_timer.h"
@@ -41,12 +44,16 @@
 #define CTS_PIN_NUMBER              7
 #define UART_TX_BUF_SIZE            256 /**< UART TX buffer size. */
 #define UART_RX_BUF_SIZE            256 /**< UART RX buffer size. */
-#define REGISTER_CMD                "{\"id\": 4 , \"bed\": %d}"
 #define EMERGENCY_CMD               "{\"id\": 1}"
 #define SERVICE_CMD                 "{\"id\": 2}"
+#define SAMPLES_IN_BUFFER           5
+#define BATTERY_LEVEL_MEAS_INTERVAL APP_TIMER_TICKS(2000) /**< Battery level measurement interval (ticks). */
+#define FULL_BATTERY_MEAS           450
 
 /* -----------------  local variables -----------------*/
 
+static nrf_saadc_value_t     m_buffer_pool[2][SAMPLES_IN_BUFFER];
+APP_TIMER_DEF(m_battery_timer_id);     /**< Battery timer. */
 
 /* ------------ local functions prototypes ------------*/
 
@@ -56,6 +63,9 @@ static void timers_init(void);
 static void buttons_leds_init(void);
 static void button_event_handler(uint8_t pin_no, uint8_t button_action);
 static u_int32_t drv_mic_data_handler(m_audio_frame_t * p_frame);
+static void saadc_init(void);
+static void saadc_callback(nrf_drv_saadc_evt_t const * p_event);
+static void battery_level_meas_timeout_handler(void * p_context);
 
 /* ----------------- public functions -----------------*/
 
@@ -70,6 +80,9 @@ void hardware_init(void)
     timers_init();
     buttons_leds_init();
     err_code = drv_mic_init(drv_mic_data_handler);
+    APP_ERROR_CHECK(err_code);
+    saadc_init();
+    err_code = app_timer_start(m_battery_timer_id, BATTERY_LEVEL_MEAS_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
 }
 
@@ -182,7 +195,14 @@ static void uart_event_handle(app_uart_evt_t * p_event)
  */
 static void timers_init(void)
 {
+    // Initialize timer module.
     ret_code_t err_code = app_timer_init();
+    APP_ERROR_CHECK(err_code);
+
+    // Create timers.
+    err_code = app_timer_create(&m_battery_timer_id,
+                                APP_TIMER_MODE_REPEATED,
+                                battery_level_meas_timeout_handler);
     APP_ERROR_CHECK(err_code);
 }
 
@@ -273,4 +293,72 @@ static u_int32_t drv_mic_data_handler(m_audio_frame_t * p_frame)
     ble_acs_mic_set(conn_get_acs_instance(), p_frame->data, p_frame->data_size);
 
     return NRF_SUCCESS;
+}
+
+static void saadc_init(void)
+{
+    ret_code_t err_code;
+    nrf_saadc_channel_config_t channel_config =
+        NRF_DRV_SAADC_DEFAULT_CHANNEL_CONFIG_SE(NRF_SAADC_INPUT_AIN0);
+
+    err_code = nrf_drv_saadc_init(NULL, saadc_callback);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = nrf_drv_saadc_channel_init(0, &channel_config);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = nrf_drv_saadc_buffer_convert(m_buffer_pool[0], SAMPLES_IN_BUFFER);
+    APP_ERROR_CHECK(err_code);
+
+    err_code = nrf_drv_saadc_buffer_convert(m_buffer_pool[1], SAMPLES_IN_BUFFER);
+    APP_ERROR_CHECK(err_code);
+}
+
+static void saadc_callback(nrf_drv_saadc_evt_t const * p_event)
+{
+    if (p_event->type == NRF_DRV_SAADC_EVT_DONE)
+    {
+        ret_code_t err_code;
+
+        err_code = nrf_drv_saadc_buffer_convert(p_event->data.done.p_buffer, SAMPLES_IN_BUFFER);
+        APP_ERROR_CHECK(err_code);
+
+        uint16_t battery_level = 0;
+
+        for(int8_t i = 0; i< SAMPLES_IN_BUFFER; i++)
+        {
+            battery_level += p_event->data.done.p_buffer[i];
+        }
+        battery_level /= SAMPLES_IN_BUFFER;
+
+        battery_level = (battery_level * 100) / FULL_BATTERY_MEAS;
+        if (battery_level > 100)
+        {
+            battery_level = 100;
+        }
+
+        err_code = ble_bas_battery_level_update(conn_get_bas_instance(), (uint8_t)battery_level, BLE_CONN_HANDLE_ALL);
+        if ((err_code != NRF_SUCCESS) &&
+            (err_code != NRF_ERROR_INVALID_STATE) &&
+            (err_code != NRF_ERROR_RESOURCES) &&
+            (err_code != NRF_ERROR_BUSY) &&
+            (err_code != BLE_ERROR_GATTS_SYS_ATTR_MISSING)
+        )
+        {
+            APP_ERROR_HANDLER(err_code);
+        }
+    }
+}
+
+/**@brief Function for handling the Battery measurement timer timeout.
+ *
+ * @details This function will be called each time the battery level measurement timer expires.
+ *
+ * @param[in] p_context  Pointer used for passing some arbitrary information (context) from the
+ *                       app_start_timer() call to the timeout handler.
+ */
+static void battery_level_meas_timeout_handler(void * p_context)
+{
+    UNUSED_PARAMETER(p_context);
+    nrf_drv_saadc_sample();
 }

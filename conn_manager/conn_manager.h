@@ -35,4 +35,6 @@ uint16_t * conn_get_conn_handle(void);
 
 ble_acs_t * conn_get_acs_instance(void);
 
+ble_bas_t * conn_get_bas_instance(void);
+
 #endif /* _CONN_MANAGER_H_ */

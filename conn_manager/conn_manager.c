@@ -210,6 +210,14 @@ ble_acs_t * conn_get_acs_instance(void)
     return ((ble_acs_t *)&m_acs);
 }
 
+/**
+ * @brief function to get the bas instace
+ */
+ble_bas_t * conn_get_bas_instance(void)
+{
+    return ((ble_bas_t *)&m_bas);
+}
+
 /* -----------------  local functions -----------------*/
 
 /**
