@@ -17,6 +17,7 @@
 #include "ble_nus.h"
 #include "ble_types.h"
 #include "ble_acs.h"
+#include "ble_bas.h"
 
 /* ---------------- public definitions ----------------*/
 

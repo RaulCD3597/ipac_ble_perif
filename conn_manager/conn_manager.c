@@ -118,6 +118,10 @@ BLE_NUS_DEF(m_nus, NRF_SDH_BLE_TOTAL_LINK_COUNT);
  */
 BLE_ACS_DEF(m_acs);
 /**
+ * BLE ACS service instance.
+ */
+BLE_BAS_DEF(m_bas);
+/**
  * Handle of the current connection.
  */
 static uint16_t   m_conn_handle          = BLE_CONN_HANDLE_INVALID;
@@ -370,6 +374,7 @@ static void services_init(void)
     ble_nus_init_t      nus_init;
     ble_acs_init_t      acs_init;
     ble_acs_config_t    acs_init_cfg;
+    ble_bas_init_t      bas_init;
     nrf_ble_qwr_init_t  qwr_init = {0};
 
     // Initialize Queued Write Module.
@@ -394,6 +399,19 @@ static void services_init(void)
     acs_init.evt_handler    = ble_acs_evt_handler;
 
     err_code = ble_acs_init(&m_acs, &acs_init);
+    APP_ERROR_CHECK(err_code);
+
+    memset(&bas_init, 0, sizeof(bas_init));
+
+    bas_init.evt_handler            = NULL;
+    bas_init.support_notification   = true;
+    bas_init.p_report_ref           = NULL;
+    bas_init.initial_batt_level     = 0xFF;
+    bas_init.bl_rd_sec              = SEC_OPEN;
+    bas_init.bl_cccd_wr_sec         = SEC_OPEN;
+    bas_init.bl_report_rd_sec       = SEC_OPEN;
+
+    err_code = ble_bas_init(&m_bas,&bas_init);
     APP_ERROR_CHECK(err_code);
 }
 
