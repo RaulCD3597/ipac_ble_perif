@@ -80,6 +80,8 @@ int main(void)
     power_management_init();
     conn_init();
 
+    sd_power_dcdc_mode_set(NRF_POWER_DCDC_ENABLE);
+
     // Start execution.
     conn_advertising_start();
 
