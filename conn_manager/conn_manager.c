@@ -66,7 +66,7 @@
  * Minimum acceptable connection interval (20 ms), Connection interval
  * uses 1.25 ms units.
  */
-#define MIN_CONN_INTERVAL               MSEC_TO_UNITS(20, UNIT_1_25_MS)
+#define MIN_CONN_INTERVAL               MSEC_TO_UNITS(10, UNIT_1_25_MS)
 /**
  * Maximum acceptable connection interval (75 ms), Connection interval
  * uses 1.25 ms units.
@@ -141,6 +141,10 @@ static ble_uuid_t m_adv_uuids[]          =
  * Name of device. Will be included in the advertising data.
  */
 static uint8_t device_name[21];
+/**
+ * Flag to know if or if not on call.
+ */
+static bool on_call = false;
 
 /* ------------ local functions prototypes ------------*/
 
@@ -216,6 +220,14 @@ ble_acs_t * conn_get_acs_instance(void)
 ble_bas_t * conn_get_bas_instance(void)
 {
     return ((ble_bas_t *)&m_bas);
+}
+
+/**
+ * @brief function to call status
+ */
+bool conn_on_call(void)
+{
+    return on_call;
 }
 
 /* -----------------  local functions -----------------*/
@@ -577,11 +589,13 @@ static void ble_acs_evt_handler(ble_acs_t           * p_acs,
             {
                 err_code = drv_mic_start();
                 APP_ERROR_CHECK(err_code);
+                on_call = true;
             }
             else
             {
                 err_code = drv_mic_stop();
                 APP_ERROR_CHECK(err_code);
+                on_call = false;
             }
             break;
 

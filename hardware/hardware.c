@@ -249,6 +249,10 @@ static void button_event_handler(uint8_t pin_no, uint8_t button_action)
         case EMERGENCY_BUTTON:
             if (APP_BUTTON_RELEASE == button_action)
             {
+                if ( !conn_on_call() )
+                {
+                    return;
+                }
                 uint8_t cmd_str[20];
                 sprintf((char * restrict)cmd_str, EMERGENCY_CMD);
                 do
@@ -267,6 +271,10 @@ static void button_event_handler(uint8_t pin_no, uint8_t button_action)
         case SERVICE_BUTTON:
             if (APP_BUTTON_RELEASE == button_action)
             {
+                if ( !conn_on_call() )
+                {
+                    return;
+                }
                 uint8_t cmd_str[20];
                 sprintf((char *restrict)cmd_str, SERVICE_CMD);
                 do
@@ -322,6 +330,11 @@ static void saadc_callback(nrf_drv_saadc_evt_t const * p_event)
 
         err_code = nrf_drv_saadc_buffer_convert(p_event->data.done.p_buffer, SAMPLES_IN_BUFFER);
         APP_ERROR_CHECK(err_code);
+
+        if ( !conn_on_call() )
+        {
+            return;
+        }
 
         uint16_t battery_level = 0;
 
