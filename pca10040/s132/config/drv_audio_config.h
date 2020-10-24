@@ -77,6 +77,8 @@
 //     <2=>Right
 #define CONFIG_PDM_MIC 1
 
+#define CONFIG_PDM_GAIN 0x40
+
 // <o> PDM Microphone Transient State Length [ms] <1-1000>
 // <i> Set the length of the PDM microphone transient state. In this state, the microphone produces invalid data after wakeup or after it is powered on.
 #define CONFIG_PDM_TRANSIENT_STATE_LEN 500

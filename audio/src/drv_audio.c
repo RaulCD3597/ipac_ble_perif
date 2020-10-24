@@ -100,6 +100,9 @@ ret_code_t drv_audio_init(drv_audio_buffer_handler_t buffer_handler)
     nrfx_pdm_config_t pdm_cfg = NRFX_PDM_DEFAULT_CONFIG(CONFIG_IO_PDM_CLK,
                                                         CONFIG_IO_PDM_DATA);
 
+    pdm_cfg.gain_l      = CONFIG_PDM_GAIN;
+    pdm_cfg.gain_r      = CONFIG_PDM_GAIN;
+
     m_buffer_handler    = buffer_handler;
 
 #if CONFIG_PDM_MIC_PWR_CTRL_ENABLED
