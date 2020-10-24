@@ -101,18 +101,6 @@ ret_code_t drv_audio_init(drv_audio_buffer_handler_t buffer_handler)
                                                         CONFIG_IO_PDM_DATA);
 
     m_buffer_handler    = buffer_handler;
-    pdm_cfg.gain_l      = CONFIG_PDM_GAIN;
-    pdm_cfg.gain_r      = CONFIG_PDM_GAIN;
-
-    pdm_cfg.mode        = NRF_PDM_MODE_MONO;
-
-#if   (CONFIG_PDM_MIC == CONFIG_PDM_MIC_LEFT)
-    pdm_cfg.edge        = NRF_PDM_EDGE_LEFTFALLING;
-#elif (CONFIG_PDM_MIC == CONFIG_PDM_MIC_RIGHT)
-    pdm_cfg.edge        = NRF_PDM_EDGE_LEFTRISING;
-#else
-#error "Value of CONFIG_PDM_MIC is not valid!"
-#endif /* (CONFIG_PDM_MIC == CONFIG_PDM_MIC_LEFT) */
 
 #if CONFIG_PDM_MIC_PWR_CTRL_ENABLED
     nrf_gpio_cfg_output(CONFIG_IO_PDM_MIC_PWR_CTRL);

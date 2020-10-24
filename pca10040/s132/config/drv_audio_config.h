@@ -52,16 +52,6 @@
 
 /* Microphone configuration */
 
-// Audio codecs:
-#define CONFIG_AUDIO_CODEC_ADPCM    1
-#define CONFIG_AUDIO_CODEC_BV32FP   2
-#define CONFIG_AUDIO_CODEC_OPUS     3
-
-// OPUS modes:
-#define CONFIG_OPUS_MODE_CELT       (1 << 0)
-#define CONFIG_OPUS_MODE_SILK       (1 << 1)
-#define CONFIG_OPUS_MODE_HYBRID     (CONFIG_OPUS_MODE_CELT | CONFIG_OPUS_MODE_SILK)
-
 // PDM microphones:
 #define CONFIG_PDM_MIC_LEFT         1
 #define CONFIG_PDM_MIC_RIGHT        2
@@ -75,31 +65,9 @@
 // <i> Enable the audio subsystem. With this subsystem enabled, the remote will transmit voice commands to the host over Bluetooth.
 #define CONFIG_AUDIO_ENABLED 1
 
-// <o> Audio Codec
-// <i> ADPCM - the simplest codec that offers minimal usage of CPU and memory resources. Runs at 64 kbit/s bit rate.
-// <i> BV32FP - dedicated for voice. Moderate usage of memory and high usage of CPU resources. Better quality than ADCPM. Runs at 32 kbit/s bit rate.
-// <i> Opus - highly advanced and configurable codec. High memory consumption. CPU consumption depends on the settings. Runs at 16-64 kbit/s. Allows for very power-efficient configuration.
-//     <1=>ADPCM
-//     <2=>BV32FP
-#define CONFIG_AUDIO_CODEC 1
-
-// <q> Enable Equalizer
-// <i> Enable the software equalizer. The equalizer characteristic is defined in the drv_audio_dsp.c file.
-#define CONFIG_AUDIO_EQUALIZER_ENABLED 0
-
 // <q> Enable Gain Control
 // <i> Enable software gain control. The gain is defined in the drv_audio_dsp.c file. It is recommended to use hardware gain control in the PDM configuration.
 #define CONFIG_AUDIO_GAIN_CONTROL_ENABLED 0
-
-// <h> ADPCM Options
-// <o> Audio Frame Size
-//     <128=>128 Samples (8 ms)
-//     <256=>256 Samples (16 ms)
-//     <512=>512 Samples (32 ms)
-#if (CONFIG_AUDIO_CODEC == CONFIG_AUDIO_CODEC_ADPCM)
-#define CONFIG_AUDIO_FRAME_SIZE_SAMPLES 80
-#endif /* CONFIG_AUDIO_CODEC == CONFIG_AUDIO_CODEC_ADPCM */
-// </h>
 
 // <h> Pulse-Density Modulation (PDM) Interface Configuration
 // <i> Set the PDM interface configuration settings.
@@ -108,10 +76,6 @@
 //     <1=>Left
 //     <2=>Right
 #define CONFIG_PDM_MIC 1
-
-// <o> PDM Decimation Filter Gain <0x00-0x50>
-// <i> For details on the PDM decimation filter, see the 'Decimation filter' section in the nRF52 Product Specification document.
-#define CONFIG_PDM_GAIN 0x34
 
 // <o> PDM Microphone Transient State Length [ms] <1-1000>
 // <i> Set the length of the PDM microphone transient state. In this state, the microphone produces invalid data after wakeup or after it is powered on.
@@ -153,42 +117,10 @@
 // <q> PDM Microphone Power Control Pin Active Low
 // <i> Select this option if PDM Microphone Power Control signal is active-low.
 #define CONFIG_PDM_MIC_PWR_CTRL_ACT_LOW 0
-// </h>
 
-
-// <o> Base Stack Size [bytes] <2048-65536:8>
-// <i> Stack space reserved for the core of the Smart Remote 3 nRF52 firmware.
-#define CONFIG_STACK_SIZE_BASE 2048
-
-// <o> BV32FP Codec Stack Size [bytes] <0-65536:8>
-// <i> Additional stack space reserved if the BV32 codec is used.
-#define CONFIG_STACK_SIZE_AUDIO_BV32FP 6144
-
-// <o> OPUS/CELT Codec Stack Size [bytes] <0-65536:8>
-// <i> Additional stack space reserved if the OPUC/CELT codec is used.
-#define CONFIG_STACK_SIZE_AUDIO_OPUS_CELT 19456
-
-// <o> OPUS/SILK Codec Stack Size [bytes] <0-65536:8>
-// <i> Additional stack space reserved if the OPUC/SILK codec is used.
-#define CONFIG_STACK_SIZE_AUDIO_OPUS_SILK 25600
-// </h>
-
-// Calculate audio parameters:
-#if (CONFIG_AUDIO_CODEC == CONFIG_AUDIO_CODEC_ADPCM)
-# define CONFIG_AUDIO_FRAME_SIZE_BYTES      80
-#elif (CONFIG_AUDIO_CODEC == CONFIG_AUDIO_CODEC_BV32FP)
-# define CONFIG_AUDIO_FRAME_SIZE_SAMPLES    80
-# define CONFIG_AUDIO_FRAME_SIZE_BYTES      20
-#elif (CONFIG_AUDIO_CODEC == CONFIG_AUDIO_CODEC_OPUS)
-# define CONFIG_AUDIO_FRAME_SIZE_BYTES      ((CONFIG_OPUS_BITRATE_LIMIT * CONFIG_AUDIO_FRAME_SIZE_SAMPLES / (8 * 16000)) + 2)
-# define CONFIG_OPUS_VBR_ENABLED            ((CONFIG_OPUS_BITRATE_CFG & 0x01) == 0x00)
-# define CONFIG_OPUS_BITRATE                (CONFIG_OPUS_BITRATE_CFG & ~0x0F)
-# if (CONFIG_OPUS_BITRATE > CONFIG_OPUS_BITRATE_LIMIT)
-#  error "Bitrate limit cannot be lower than selected codec bitrate"
-# endif
-#else
-# error "Unsupported Compression"
-#endif
+// Audio parameters:
+#define CONFIG_AUDIO_FRAME_SIZE_SAMPLES      80
+# define CONFIG_AUDIO_FRAME_SIZE_BYTES       160
 
 # define CONFIG_PDM_BUFFER_SIZE_SAMPLES (1 * CONFIG_AUDIO_FRAME_SIZE_SAMPLES)
 

@@ -36,7 +36,7 @@ NRF_SDH_BLE_OBSERVER(_name ## _obs, \
     #define PACKED(TYPE) TYPE __attribute__ ((packed))
 #endif
 
-#define BLE_ACS_MIC_FRAME_SIZE               CONFIG_AUDIO_FRAME_SIZE_BYTES
+#define BLE_ACS_MIC_FRAME_SIZE               CONFIG_AUDIO_FRAME_SIZE_SAMPLES
 
 typedef PACKED( union
 {

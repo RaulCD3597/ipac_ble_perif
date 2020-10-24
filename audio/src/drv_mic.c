@@ -51,11 +51,12 @@ static void m_audio_process(void * p_event_data, uint16_t event_size)
 
     uint8_t nested;
     app_util_critical_region_enter(&nested);
-    for(uint16_t i = 0; i < CONFIG_AUDIO_FRAME_SIZE_BYTES; i++)
+    for(uint16_t i = 0; i < CONFIG_AUDIO_FRAME_SIZE_SAMPLES; i++)
     {
-        frame_buf.data[i] = linear2ulaw(*(p_buffer++));
+        frame_buf.data[i] = linear2ulaw(*p_buffer);
+        p_buffer += 2;
     }
-    frame_buf.data_size = CONFIG_AUDIO_FRAME_SIZE_BYTES;
+    frame_buf.data_size = CONFIG_AUDIO_FRAME_SIZE_SAMPLES;
     p_pdm_buf->free = true;
     app_util_critical_region_exit(nested);
 
@@ -77,7 +78,7 @@ static void m_audio_buffer_handler(int16_t * p_buffer)
     uint32_t     err_code;
     pdm_buf_t  * p_pdm_buf = NULL;
     uint32_t     pdm_buf_addr;
-    uint16_t samples = CONFIG_AUDIO_FRAME_SIZE_BYTES;
+    uint16_t     samples = CONFIG_AUDIO_FRAME_SIZE_BYTES;
 
     for(uint32_t i = 0; i < PDM_BUF_NUM; i++)
     {
