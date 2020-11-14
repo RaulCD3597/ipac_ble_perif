@@ -66,12 +66,12 @@
  * Minimum acceptable connection interval (20 ms), Connection interval
  * uses 1.25 ms units.
  */
-#define MIN_CONN_INTERVAL               MSEC_TO_UNITS(10, UNIT_1_25_MS)
+#define MIN_CONN_INTERVAL               MSEC_TO_UNITS(17.5, UNIT_1_25_MS)
 /**
  * Maximum acceptable connection interval (75 ms), Connection interval
  * uses 1.25 ms units.
  */
-#define MAX_CONN_INTERVAL               MSEC_TO_UNITS(75, UNIT_1_25_MS)
+#define MAX_CONN_INTERVAL               MSEC_TO_UNITS(20, UNIT_1_25_MS)
 /**
  * Slave latency.
  */

@@ -26,7 +26,7 @@ NRF_SDH_BLE_OBSERVER(_name ## _obs, \
                      ble_acs_on_ble_evt, &_name)
 
 #define BLE_UUID_ACS_SERVICE 0x0500                             /**< The UUID of the Audio Custom Service. */
-#define BLE_ACS_MAX_DATA_LEN (BLE_GATT_ATT_MTU_DEFAULT - 3)     /**< Maximum length of data (in bytes) that can be transmitted to the peer by the Audio Custom service module. */
+#define BLE_ACS_MAX_DATA_LEN (NRF_SDH_BLE_GATT_MAX_MTU_SIZE - 3)     /**< Maximum length of data (in bytes) that can be transmitted to the peer by the Audio Custom service module. */
 
 #ifdef __GNUC__
     #ifdef PACKED
